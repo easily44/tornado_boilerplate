@@ -5,3 +5,4 @@ tornado架子
 包含：
 
 * uvloop
+* aiomysql

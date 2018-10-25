@@ -24,8 +24,35 @@ class TestHandler(BaseHandler):
         self.write("Hello, world!")
 
 
-class Test2(BaseHandler):
-    def get(self):
+class TestMysqlHandler(BaseHandler):
+    async def get(self):
+        print(1)
+        await self.mysql.connect()
+        print(2)
+        cur = await self.mysql.conn.cursor()
+        print(3)
+        await cur.execute('select * from course_info')
+        print(4)
+        r = await cur.fetchall()
+        print(r)
+        await cur.close()
+
         self.write('test2')
+
+
+class TestMysqlPoolHandler(BaseHandler):
+    async def get(self):
+        print(1)
+        with (await self.mysql_pool) as conn:
+            print(2)
+            cur = await conn.cursor()
+            print(3)
+            await cur.execute('select * from course_info')
+            print(4)
+            r = await cur.fetchall()
+            print(r)
+            await cur.close()
+        self.write('test3')
+
 
 

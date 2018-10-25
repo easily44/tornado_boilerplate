@@ -8,6 +8,7 @@ from urls import url_patterns
 from settings import TORNADO
 from tornado.httpclient import AsyncHTTPClient
 from logging.config import dictConfig
+from utils.mysql import Mysql
 
 
 def make_app():
@@ -19,6 +20,14 @@ class App(tornado.web.Application):
         super(App, self).__init__(*args, **kwargs)
         AsyncHTTPClient.configure(None, defaults={'Connection': 'keep-alive'})
         self.client = AsyncHTTPClient()
+
+        # # 每次connect
+        # self.mysql = Mysql(**settings.DATABASE)
+
+        # 建立pool
+        self.mysql = Mysql(**settings.DATABASE)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.mysql.create_pool())
 
         dictConfig(settings.LOGGING)
 

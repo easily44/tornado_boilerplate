@@ -19,3 +19,12 @@ TORNADO = {
     'gzip': True,
 }
 
+DATABASE = {
+    'host': 'db.test.info',
+    'user': 'test',
+    'password': 'test',
+    'db': 'test',
+    'port': 3306,
+    'maxsize': 100,  # connection pool count
+}
+

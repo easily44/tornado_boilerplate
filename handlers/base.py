@@ -16,6 +16,8 @@ class BaseHandler(tornado.web.RequestHandler):
     def __init__(self, *args, **kwargs):
         super(BaseHandler, self).__init__(*args, **kwargs)
         self.logger = gen_log
+        self.mysql = self.application.mysql
+        self.mysql_pool = self.application.mysql.pool
 
     def write_error(self, status_code, **kwargs):
         self.set_header("Content-Type", "application/json; charset=utf-8")
@@ -84,3 +86,20 @@ class BaseHandler(tornado.web.RequestHandler):
             'error_msg': ''
         })
         self.write(data)
+
+    def error_response(self, error_code, error_msg):
+        self.write({
+            'error_code': error_code,
+            'error_msg': error_msg
+        })
+
+
+class NotFoundHandler(BaseHandler):
+    """
+    no handler return here
+    """
+    def get(self):
+        self.error_response(100, u'NotHandler')
+
+
+
