@@ -9,6 +9,8 @@ from settings import TORNADO
 from tornado.httpclient import AsyncHTTPClient
 from logging.config import dictConfig
 from utils.mysql import Mysql
+from elasticsearch_async import AsyncElasticsearch
+from settings import ES_SERVER
 
 
 def make_app():
@@ -28,6 +30,9 @@ class App(tornado.web.Application):
         self.mysql = Mysql(**settings.DATABASE)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.mysql.create_pool())
+
+        # es
+        self.es = AsyncElasticsearch(hosts=ES_SERVER)
 
         dictConfig(settings.LOGGING)
 

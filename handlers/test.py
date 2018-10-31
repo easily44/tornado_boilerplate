@@ -55,4 +55,19 @@ class TestMysqlPoolHandler(BaseHandler):
         self.write('test3')
 
 
+class TestESHandler(BaseHandler):
+    """
+    ES实现
+    """
+    async def get(self):
+        t = self.get_argument('t', 1)
+        # es = AsyncES()
+        print('start')
+        info = await self.es.info()
+        print('end info')
+        # g = await self.es.search(index='ecommerce', doc_type='products')
+        # print('end')
+        self.success_response({'data': len(info)})
+
+
 

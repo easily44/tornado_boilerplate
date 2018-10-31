@@ -93,6 +93,10 @@ class BaseHandler(tornado.web.RequestHandler):
             'error_msg': error_msg
         })
 
+    @property
+    def es(self):
+        return self.application.es
+
 
 class NotFoundHandler(BaseHandler):
     """

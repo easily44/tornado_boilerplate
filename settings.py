@@ -28,3 +28,7 @@ DATABASE = {
     'maxsize': 100,  # connection pool count
 }
 
+
+# es
+ES_SERVER = ['192.168.107.196'] * 20  # 这里换成es的机器
+
