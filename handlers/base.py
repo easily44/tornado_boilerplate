@@ -2,6 +2,7 @@ import json
 import random
 import tornado.web
 from tornado.escape import json_decode
+from tornado.httpclient import HTTPClientError
 from tornado.httputil import url_concat
 from urllib.parse import urlencode
 from tornado.web import HTTPError
@@ -19,24 +20,41 @@ class BaseHandler(tornado.web.RequestHandler):
         self.mysql = self.application.mysql
         self.mysql_pool = self.application.mysql.pool
 
-    def write_error(self, status_code, **kwargs):
-        self.set_header("Content-Type", "application/json; charset=utf-8")
-        self.finish(json.dumps({
-            'error_codea': status_code,
-            'error_msg': self._reason,
-        }))
+    def error_response(self, code, msg):
+        self.write({
+            'error_code': code,
+            'error_msg': msg,
+        })
+        raise tornado.web.Finish
+
+    def success_response(self, data):
+        data.update({
+            'error_code': 0,
+            'error_msg': ''
+        })
+        self.write(data)
+        raise tornado.web.Finish
 
     async def get_external(self, url, **kwargs):
         url = url_concat(url, kwargs)
-        res = await self.application.client.fetch(url, request_timeout=5)
-
-        return self.check_response(res)
+        try:
+            res = await self.application.client.fetch(url, request_timeout=5)
+        except HTTPClientError:
+            self.logger.error('>.< GET {}'.format(url))
+            self.error_response(400, 'external server error')
+        else:
+            return self.check_response(res)
 
     async def post_external(self, url, **kwargs):
         params = urlencode(kwargs)
-        res = await self.application.client.fetch(
-            url, method='POST', body=params, request_timeout=5)
-        return self.check_response(res)
+        try:
+            res = await self.application.client.fetch(
+                url, method='POST', body=params, request_timeout=5)
+        except HTTPClientError:
+            self.logger.error('POST {}'.format(url))
+            self.error_response(400, 'external server error')
+        else:
+            return self.check_response(res)
 
     def check_response(self, res):
         """
@@ -60,38 +78,16 @@ class BaseHandler(tornado.web.RequestHandler):
             data = json_decode(res.body)
         except ValueError as e:
             self.logger.error('response not json: {}, content: {}'.format(e, res.body))
-            self.error(500, u'{} service failed'.format(self.__class__))
+            self.error_response(500, u'{} service failed'.format(self.__class__))
         else:
             if hasattr(data, 'code'):
                 if data.get('code', 0) != 0:
                     self.logger.error(
                         'error_url: {}, error_msg: {}'.format(
                             res.effective_url, data['message']))
-                    self.error(data['code'], data['message'])
+                    self.error_response(data['code'], data['message'])
 
         return data
-
-    def error(self, code, reason):
-        """
-        省的每个RequestHandler都要import HTTPError
-        :param code: 错误码
-        :param reason: 原因
-        :return:
-        """
-        raise HTTPError(code, reason)
-
-    def success_response(self, data):
-        data.update({
-            'error_code': 0,
-            'error_msg': ''
-        })
-        self.write(data)
-
-    def error_response(self, error_code, error_msg):
-        self.write({
-            'error_code': error_code,
-            'error_msg': error_msg
-        })
 
     @property
     def es(self):
