@@ -20,7 +20,6 @@ def make_app():
 class App(tornado.web.Application):
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
-        # AsyncHTTPClient.configure(None, defaults={'Connection': 'keep-alive'})
         AsyncHTTPClient.configure("tornado.curl_httpclient.CurlAsyncHTTPClient",
                                   defaults={'Connection': 'keep-alive'})
         self.client = AsyncHTTPClient()
