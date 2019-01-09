@@ -1,13 +1,20 @@
 from handlers.base import NotFoundHandler
-from handlers.test import TestHandler, TestMysqlHandler, TestMysqlPoolHandler, \
-    TestESHandler
+from handlers.test import TestHandler, TestESHandler
+from handlers.mysqlapi import TestMysqlHandler, TestMysqlPoolHandler,\
+    TestMysqlSqlHandler
 
 
 url_patterns = [
     (r'/test', TestHandler),
+
+    # es
+    (r'/testes', TestESHandler),
+
+    # mysql
     (r'/testmysql', TestMysqlHandler),
     (r'/testmysqlpool', TestMysqlPoolHandler),
-    (r'/testes', TestESHandler),
+    (r'/testmysqlsql', TestMysqlSqlHandler),
+
 ]
 
 url_patterns.extend([
