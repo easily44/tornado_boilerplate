@@ -1,5 +1,8 @@
 import tornado.ioloop
 import tornado.web
+import tornado.netutil
+import tornado.process
+from tornado.httpserver import HTTPServer
 from tornado.options import options
 import asyncio
 import uvloop
@@ -41,6 +44,13 @@ class App(tornado.web.Application):
 if __name__ == "__main__":
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     app = App(url_patterns, **TORNADO)
-    app.listen(options.port)
+    # app.listen(options.port)
+    # print('server start on {}'.format(options.port))
+    # tornado.ioloop.IOLoop.current().start()
+
     print('server start on {}'.format(options.port))
+    sockets = tornado.netutil.bind_sockets(options.port)
+    tornado.process.fork_processes(0)
+    server = HTTPServer(app)
+    server.add_sockets(sockets)
     tornado.ioloop.IOLoop.current().start()
